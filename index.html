@@ -3,18 +3,34 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Website Biz OpenAI Skill</title>
+  <title>Website Biz OpenAI</title>
   <style>
-    body{font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;max-width:980px;margin:40px auto;padding:0 16px;line-height:1.5}
-    a{color:#0a66ff}
-    .card{border:1px solid #e5e7eb;border-radius:12px;padding:20px}
+    :root{--bg:#0b1020;--card:#131b2f;--text:#eef4ff;--muted:#9fb0d3;--acc:#5eead4}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial;background:radial-gradient(1200px 800px at 10% -20%,#1c2f5e,transparent),var(--bg);color:var(--text)}
+    .wrap{max-width:1000px;margin:0 auto;padding:48px 18px}
+    .hero{padding:24px;border:1px solid #263455;background:linear-gradient(180deg,#101a31,#0e1528);border-radius:16px}
+    h1{font-size:clamp(2rem,4vw,3rem);margin:.2rem 0}
+    p{color:var(--muted);line-height:1.6}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:18px}
+    .card{border:1px solid #263455;border-radius:12px;padding:14px;background:var(--card)}
+    a.btn{display:inline-block;margin-top:10px;padding:10px 14px;border-radius:10px;background:var(--acc);color:#03201d;text-decoration:none;font-weight:700}
+    code{background:#0b1428;padding:2px 6px;border-radius:6px}
   </style>
 </head>
 <body>
-  <h1>Website Biz OpenAI Skill</h1>
-  <div class="card">
-    <p>OpenAI-native automation playbook for scraping leads, generating sites, and sending outreach.</p>
-    <p><a href="./SKILL.md">Open SKILL.md</a></p>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Website Biz OpenAI</h1>
+      <p>Fully operational automation toolkit for scraping leads, generating custom websites, and sending outreach at scale.</p>
+      <a class="btn" href="./README.md">Read Ops Guide</a>
+      <a class="btn" href="./SKILL.md" style="margin-left:8px">Read Skill Spec</a>
+    </section>
+    <section class="grid">
+      <div class="card"><strong>Pipeline</strong><p>Scrape → Enrich → Generate → Outreach → Daily Automation</p></div>
+      <div class="card"><strong>Runtime</strong><p><code>node src/cli.mjs</code> operational command surface</p></div>
+      <div class="card"><strong>Storage</strong><p>Local-first data in <code>./website-biz/</code></p></div>
+      <div class="card"><strong>Provider stack</strong><p>OpenAI + Replicate + Google Places + SMTP</p></div>
+    </section>
   </div>
 </body>
 </html>
