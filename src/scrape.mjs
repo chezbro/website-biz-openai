@@ -182,9 +182,6 @@ export async function scrapeLeads({ query, location, maxResults = 60 }) {
   if (!forceFree && process.env.GOOGLE_PLACES_API_KEY) {
     scraped = await scrapeViaGooglePlacesApi({ query, location, maxResults });
   } else {
-    if (process.env.VERCEL) {
-      throw new Error('free_maps_scraper_requires_local_runtime: run scraper via local CLI/worker for Playwright support');
-    }
     scraped = await scrapeViaPlaywright({ query, location, maxResults });
   }
 
