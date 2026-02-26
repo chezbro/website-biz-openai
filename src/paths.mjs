@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 export const ROOT = process.cwd();
-export const DATA_DIR = path.join(ROOT, 'website-biz');
+export const DATA_DIR = process.env.WEBSITE_BIZ_DATA_DIR || path.join(ROOT, 'website-biz');
 export const IMAGES_DIR = path.join(DATA_DIR, 'images');
 export const SITES_DIR = path.join(DATA_DIR, 'websites');
 export const TEMPLATES_FILE = path.join(DATA_DIR, 'templates.json');

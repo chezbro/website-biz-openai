@@ -3,34 +3,87 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Website Biz OpenAI</title>
+  <title>Website Biz OpenAI Control Center</title>
   <style>
-    :root{--bg:#0b1020;--card:#131b2f;--text:#eef4ff;--muted:#9fb0d3;--acc:#5eead4}
-    *{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Segoe UI,Arial;background:radial-gradient(1200px 800px at 10% -20%,#1c2f5e,transparent),var(--bg);color:var(--text)}
-    .wrap{max-width:1000px;margin:0 auto;padding:48px 18px}
-    .hero{padding:24px;border:1px solid #263455;background:linear-gradient(180deg,#101a31,#0e1528);border-radius:16px}
-    h1{font-size:clamp(2rem,4vw,3rem);margin:.2rem 0}
-    p{color:var(--muted);line-height:1.6}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:18px}
-    .card{border:1px solid #263455;border-radius:12px;padding:14px;background:var(--card)}
-    a.btn{display:inline-block;margin-top:10px;padding:10px 14px;border-radius:10px;background:var(--acc);color:#03201d;text-decoration:none;font-weight:700}
-    code{background:#0b1428;padding:2px 6px;border-radius:6px}
+    body{font-family:Inter,system-ui;background:#0b1020;color:#eef4ff;margin:0}
+    .wrap{max-width:1100px;margin:0 auto;padding:20px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    .card{background:#131b2f;border:1px solid #263455;border-radius:12px;padding:14px}
+    input,textarea{width:100%;margin-top:6px;background:#0d1426;color:#eef4ff;border:1px solid #33456c;border-radius:8px;padding:8px}
+    button{margin-top:8px;background:#5eead4;color:#03201d;border:0;padding:9px 12px;border-radius:8px;font-weight:700;cursor:pointer}
+    pre{background:#0b1428;padding:12px;border-radius:10px;white-space:pre-wrap;max-height:320px;overflow:auto}
+    h1{margin:8px 0 14px}
+    .muted{color:#9fb0d3}
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <section class="hero">
-      <h1>Website Biz OpenAI</h1>
-      <p>Fully operational automation toolkit for scraping leads, generating custom websites, and sending outreach at scale.</p>
-      <a class="btn" href="./README.md">Read Ops Guide</a>
-      <a class="btn" href="./SKILL.md" style="margin-left:8px">Read Skill Spec</a>
-    </section>
-    <section class="grid">
-      <div class="card"><strong>Pipeline</strong><p>Scrape → Enrich → Generate → Outreach → Daily Automation</p></div>
-      <div class="card"><strong>Runtime</strong><p><code>node src/cli.mjs</code> operational command surface</p></div>
-      <div class="card"><strong>Storage</strong><p>Local-first data in <code>./website-biz/</code></p></div>
-      <div class="card"><strong>Provider stack</strong><p>OpenAI + Replicate + Google Places + SMTP</p></div>
-    </section>
+<div class="wrap">
+  <h1>Website Biz OpenAI — Full Operations Control Center</h1>
+  <p class="muted">All major functions are available below: setup check, scraping, enrichment, website generation, templates, outreach, daily automation, and status.</p>
+
+  <div class="grid">
+    <div class="card"><h3>Setup Check</h3><button onclick="run('check')">Run Check</button></div>
+    <div class="card"><h3>Status</h3><button onclick="run('status')">Refresh Status</button></div>
+
+    <div class="card"><h3>Scrape Leads</h3>
+      <label>Industry<input id="q" value="plumbers"></label>
+      <label>City<input id="loc" value="Austin TX"></label>
+      <label>Max results<input id="max" value="60"></label>
+      <button onclick="run('scrape',{query:v('q'),location:v('loc'),maxResults:Number(v('max'))})">Scrape</button>
+    </div>
+
+    <div class="card"><h3>Enrich Leads</h3>
+      <label>Leads file<input id="lf" value="/tmp/website-biz/leads-plumbers-austin-tx.json"></label>
+      <button onclick="run('enrich',{leadsFile:v('lf')})">Enrich</button>
+    </div>
+
+    <div class="card"><h3>Generate Website</h3>
+      <label>Leads file<input id="glf" value="/tmp/website-biz/leads-plumbers-austin-tx.json"></label>
+      <label>Lead index<input id="idx" value="0"></label>
+      <button onclick="run('generate-site',{leadsFile:v('glf'),index:Number(v('idx'))})">Generate</button>
+    </div>
+
+    <div class="card"><h3>Send Outreach</h3>
+      <label>Leads file<input id="slf" value="/tmp/website-biz/leads-plumbers-austin-tx.json"></label>
+      <button onclick="run('send',{leadsFile:v('slf')})">Send</button>
+    </div>
+
+    <div class="card"><h3>Template: Add</h3>
+      <label>Name<input id="tn" value="Quick opener"></label>
+      <label>Subject<input id="ts" value="Built this for {{business_name}}"></label>
+      <label>Body<textarea id="tb">Hey {{business_name}}, I built a quick concept: {{website_url}}</textarea></label>
+      <button onclick="run('template-add',{name:v('tn'),subject:v('ts'),body:v('tb')})">Add Template</button>
+      <button onclick="run('template-list')">List Templates</button>
+    </div>
+
+    <div class="card"><h3>Template: Default/Delete</h3>
+      <label>Template name<input id="tdn" value="Quick opener"></label>
+      <button onclick="run('template-default',{name:v('tdn')})">Set Default</button>
+      <button onclick="run('template-delete',{name:v('tdn')})">Delete</button>
+    </div>
+
+    <div class="card"><h3>Daily Automation</h3>
+      <label>Industry<input id="dq" value="plumbers"></label>
+      <label>City<input id="dl" value="Austin TX"></label>
+      <button onclick="run('daily-set',{query:v('dq'),location:v('dl')})">Set Target</button>
+      <button onclick="run('daily-run')">Run Daily</button>
+    </div>
   </div>
+
+  <h3>Output</h3>
+  <pre id="out">Ready.</pre>
+</div>
+<script>
+const out=document.getElementById('out');
+const v=(id)=>document.getElementById(id).value;
+async function run(action, params={}){
+  out.textContent='Running '+action+'...';
+  try{
+    const r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,params})});
+    const j=await r.json();
+    out.textContent=JSON.stringify(j,null,2);
+  }catch(e){out.textContent='ERROR: '+e.message}
+}
+</script>
 </body>
 </html>
