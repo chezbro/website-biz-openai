@@ -67,6 +67,14 @@
       <label>City<input id="dl" value="Austin TX"></label>
       <button onclick="run('daily-set',{query:v('dq'),location:v('dl')})">Set Target</button>
       <button onclick="run('daily-run')">Run Daily</button>
+      <button onclick="run('daily-run',{},true)">Queue Daily Run</button>
+    </div>
+
+    <div class="card"><h3>Jobs</h3>
+      <button onclick="run('job-list',{limit:25})">List Jobs</button>
+      <label>Job ID<input id="jid"></label>
+      <button onclick="run('job-get',{id:v('jid')})">Get Job</button>
+      <p class="muted">Async jobs are queued via actions with async=true.</p>
     </div>
   </div>
 
@@ -76,10 +84,10 @@
 <script>
 const out=document.getElementById('out');
 const v=(id)=>document.getElementById(id).value;
-async function run(action, params={}){
+async function run(action, params={}, isAsync=false){
   out.textContent='Running '+action+'...';
   try{
-    const r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,params})});
+    const r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,params,async:isAsync})});
     const j=await r.json();
     out.textContent=JSON.stringify(j,null,2);
   }catch(e){out.textContent='ERROR: '+e.message}

@@ -2,7 +2,7 @@
 
 Production-grade, OpenAI-first automation toolkit for running a website agency pipeline:
 
-1. Scrape local leads (Google Places)
+1. Scrape local leads (free Playwright Google Maps scraper by default; optional Google Places API)
 2. Enrich leads (email + socials)
 3. Generate custom websites (OpenAI + Replicate)
 4. Send personalized cold outreach (SMTP)
@@ -47,12 +47,29 @@ node src/cli.mjs template-default "Quick opener"
 ## Required env vars
 
 - OPENAI_API_KEY
-- GOOGLE_PLACES_API_KEY
 - REPLICATE_API_TOKEN
 - SMTP_HOST
 - SMTP_USER
 - SMTP_PASS
 - SMTP_FROM
+
+Optional:
+- GOOGLE_PLACES_API_KEY (only if you want official API path)
+- WORKER_TOKEN (protect `/api/worker`)
+
+## Async jobs + worker mode (world-class reliability)
+
+Queue jobs from web UI using async actions, then process them with a worker.
+
+### Local worker
+```bash
+npm run worker
+```
+
+### Remote worker trigger
+```bash
+curl -X POST "https://website-biz-openai.vercel.app/api/worker" -H "x-worker-token: YOUR_WORKER_TOKEN"
+```
 
 ## Data directory
 

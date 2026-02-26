@@ -6,7 +6,8 @@
   "scripts": {
     "check": "node src/cli.mjs check",
     "status": "node src/cli.mjs status",
-    "daily": "node src/cli.mjs daily-run"
+    "daily": "node src/cli.mjs daily-run",
+    "worker": "node src/worker.mjs"
   },
   "dependencies": {
     "openai": "^4.63.0",

@@ -7,13 +7,27 @@ import { generateWebsiteForLead } from '../src/generate.mjs';
 import { sendOutreach } from '../src/outreach.mjs';
 import { getStatus } from '../src/status.mjs';
 import { setDailyTarget, runDaily } from '../src/daily.mjs';
+import { createJob, getJob, listJobs } from '../src/jobs.mjs';
 
 export default async function handler(req, res) {
   process.env.WEBSITE_BIZ_DATA_DIR = process.env.WEBSITE_BIZ_DATA_DIR || '/tmp/website-biz';
   ensureDirs();
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'method_not_allowed' });
-  const { action, params = {} } = req.body || {};
+  const { action, params = {}, async: isAsync = false } = req.body || {};
   try {
+    if (action === 'job-get') {
+      return res.status(200).json({ ok: true, result: getJob(params.id) });
+    }
+    if (action === 'job-list') {
+      return res.status(200).json({ ok: true, result: listJobs(Number(params.limit || 25)) });
+    }
+
+    const queueable = new Set(['scrape','enrich','generate-site','send','daily-set','daily-run']);
+    if (isAsync && queueable.has(action)) {
+      const job = createJob(action, params);
+      return res.status(200).json({ ok: true, queued: true, job });
+    }
+
     let result;
     switch (action) {
       case 'check': result = checkEnv(); break;
