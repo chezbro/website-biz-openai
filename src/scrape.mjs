@@ -73,70 +73,94 @@ async function scrapeViaGooglePlacesApi({ query, location, maxResults }) {
 async function scrapeViaPlaywright({ query, location, maxResults }) {
   const { chromium } = await import('playwright');
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const context = await browser.newContext({
+    viewport: { width: 1440, height: 900 },
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    locale: 'en-US',
+  });
   const page = await context.newPage();
 
   try {
     const url = `https://www.google.com/maps/search/${encodeURIComponent(`${query} in ${location}`)}`;
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForTimeout(2500);
+    await page.waitForTimeout(3500);
 
-    // Dismiss cookie dialogs when present
     for (const txt of ['Reject all', 'I agree', 'Accept all']) {
       const btn = page.getByRole('button', { name: txt });
       if (await btn.count()) {
-        try { await btn.first().click({ timeout: 1000 }); } catch {}
+        try { await btn.first().click({ timeout: 1200 }); } catch {}
       }
     }
 
+    const seen = new Set();
+    const candidates = [];
+
+    for (let i = 0; i < 14 && candidates.length < maxResults * 3; i++) {
+      const rows = await page.$$eval('a.hfpxzc, a[href*="/maps/place/"]', (els) =>
+        els.map((el) => ({
+          href: el.getAttribute('href') || '',
+          name: (el.getAttribute('aria-label') || el.textContent || '').trim(),
+        }))
+      );
+
+      for (const r of rows) {
+        if (!r.href || !r.href.includes('/maps/place/')) continue;
+        const key = `${r.name}|${r.href}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        candidates.push(r);
+      }
+
+      const feed = page.locator('div[role="feed"]').first();
+      if (await feed.count()) {
+        await feed.evaluate((el) => { el.scrollBy(0, 1800); });
+      } else {
+        await page.mouse.wheel(0, 1800);
+      }
+      await page.waitForTimeout(1000 + Math.floor(Math.random() * 500));
+    }
+
     const collected = new Map();
-
-    for (let i = 0; i < 20 && collected.size < maxResults; i++) {
-      const cards = page.locator('a[href*="/maps/place/"]');
-      const count = await cards.count();
-
-      for (let c = 0; c < count && collected.size < maxResults; c++) {
-        const card = cards.nth(c);
-        const href = (await card.getAttribute('href')) || '';
-        const name = ((await card.textContent()) || '').trim();
-        if (!name || collected.has(`${name}|${href}`)) continue;
-
-        try {
-          await card.click({ timeout: 3000 });
-          await page.waitForTimeout(1200 + Math.floor(Math.random() * 600));
-        } catch {
-          continue;
-        }
-
-        const data = await page.evaluate(() => {
+    for (const c of candidates.slice(0, maxResults * 2)) {
+      if (collected.size >= maxResults) break;
+      const detail = await context.newPage();
+      try {
+        await detail.goto(c.href, { waitUntil: 'domcontentloaded', timeout: 45000 });
+        await detail.waitForTimeout(1400);
+        const data = await detail.evaluate(() => {
           const txt = (sel) => document.querySelector(sel)?.textContent?.trim() || '';
-          const allButtons = Array.from(document.querySelectorAll('button, a')).map((el) => (el.textContent || '').trim());
-          const phone = allButtons.find((t) => /^\+?[0-9().\-\s]{7,}$/.test(t)) || '';
-          const website = (document.querySelector('a[data-item-id="authority"]')?.getAttribute('href')) || '';
-          const ratingRaw = txt('div[role="img"]');
+          const title = txt('h1');
+
+          const addr = document.querySelector('button[data-item-id="address"] .fontBodyMedium, button[data-item-id="address"]')?.textContent?.trim() || '';
+          const phone = document.querySelector('button[data-item-id^="phone"] .fontBodyMedium, button[data-item-id^="phone"]')?.textContent?.trim() || '';
+          const website = document.querySelector('a[data-item-id="authority"]')?.getAttribute('href') || '';
+
+          const ratingNode = document.querySelector('div[role="img"][aria-label*="stars"], div[role="img"][aria-label*="star"]');
+          const ratingRaw = ratingNode?.getAttribute('aria-label') || '';
           const ratingMatch = ratingRaw.match(/([0-9]+\.?[0-9]*)/);
           const reviewsMatch = ratingRaw.match(/([0-9,]+)\s*reviews?/i);
-          const title = txt('h1');
-          const addrCandidates = Array.from(document.querySelectorAll('button, div')).map((n) => (n.textContent || '').trim());
-          const address = addrCandidates.find((t) => /\d+\s+.*(St|Street|Ave|Avenue|Rd|Road|Blvd|Drive|Dr|Ln|Way|Ct|Suite|Ste)/i.test(t)) || '';
+
           return {
             name: title,
+            address: addr,
             phone,
             website,
-            address,
             rating: ratingMatch ? Number(ratingMatch[1]) : null,
             reviews: reviewsMatch ? Number(reviewsMatch[1].replace(/,/g, '')) : 0,
           };
         });
 
-        const finalName = data.name || name;
-        if (!finalName) continue;
-        const key = `${finalName}|${data.address}`;
-        collected.set(key, toLead({ ...data, name: finalName, query, location, id: href || key }));
+        const name = data.name || c.name || '';
+        if (!name) continue;
+        const dedupe = `${name}|${data.address || ''}`;
+        if (collected.has(dedupe)) continue;
+        collected.set(dedupe, toLead({ ...data, name, query, location, id: c.href }));
+      } catch {
+        // ignore single-detail failures
+      } finally {
+        await detail.close();
       }
-
-      await page.mouse.wheel(0, 2200);
-      await page.waitForTimeout(900 + Math.floor(Math.random() * 500));
+      await page.waitForTimeout(250 + Math.floor(Math.random() * 250));
     }
 
     return Array.from(collected.values()).slice(0, maxResults);
