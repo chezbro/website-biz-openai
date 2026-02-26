@@ -77,10 +77,12 @@ async function scrapeViaPlaywright({ query, location, maxResults }) {
   if (process.env.VERCEL) {
     const chromiumPack = await import('@sparticuz/chromium');
     const executablePath = await chromiumPack.default.executablePath();
+    const hardenedArgs = (chromiumPack.default.args || []).filter((a) => a !== '--single-process');
     launchOptions = {
       headless: true,
       executablePath,
-      args: chromiumPack.default.args,
+      args: hardenedArgs,
+      chromiumSandbox: false,
     };
   }
 
