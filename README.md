@@ -19,6 +19,8 @@ node src/cli.mjs check
 
 ## Core commands
 
+> Free Google Maps scraping mode uses Playwright (no Places API key). For best stability, run scraping from local CLI/worker runtime.
+
 ```bash
 node src/cli.mjs scrape plumbers "Austin TX"
 node src/cli.mjs enrich ./website-biz/leads-plumbers-austin-tx.json
