@@ -78,3 +78,12 @@ Run `supabase.sql` in your project SQL editor to create the `website_biz_jobs` t
 ## Data directory
 
 All output is local in `./website-biz/` (or `/tmp/website-biz` on Vercel serverless runtime).
+
+## Local dashboard + worker
+
+```bash
+npm run dev        # starts local UI/API at http://localhost:8787
+npm run worker     # starts worker
+# or both:
+npm run dev:all
+```
