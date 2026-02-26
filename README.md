@@ -71,6 +71,10 @@ npm run worker
 curl -X POST "https://website-biz-openai.vercel.app/api/worker" -H "x-worker-token: YOUR_WORKER_TOKEN"
 ```
 
+## Supabase setup (recommended)
+
+Run `supabase.sql` in your project SQL editor to create the `website_biz_jobs` table for durable queued jobs.
+
 ## Data directory
 
-All output is local in `./website-biz/`.
+All output is local in `./website-biz/` (or `/tmp/website-biz` on Vercel serverless runtime).

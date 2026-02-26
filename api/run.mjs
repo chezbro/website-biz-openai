@@ -16,15 +16,15 @@ export default async function handler(req, res) {
   const { action, params = {}, async: isAsync = false } = req.body || {};
   try {
     if (action === 'job-get') {
-      return res.status(200).json({ ok: true, result: getJob(params.id) });
+      return res.status(200).json({ ok: true, result: await getJob(params.id) });
     }
     if (action === 'job-list') {
-      return res.status(200).json({ ok: true, result: listJobs(Number(params.limit || 25)) });
+      return res.status(200).json({ ok: true, result: await listJobs(Number(params.limit || 25)) });
     }
 
     const queueable = new Set(['scrape','enrich','generate-site','send','daily-set','daily-run']);
     if (isAsync && queueable.has(action)) {
-      const job = createJob(action, params);
+      const job = await createJob(action, params);
       return res.status(200).json({ ok: true, queued: true, job });
     }
 
