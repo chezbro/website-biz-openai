@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 import { IMAGES_DIR, SITES_DIR, loadJson, saveJson } from './paths.mjs';
 import { dbUpsertLeads, dbUpsertWebsite, dbWriteArtifact } from './db.mjs';
 import { buildWebsiteTemplate } from './siteTemplates.mjs';
+import { resolveImageSet } from './imageSources.mjs';
 
 export async function generateWebsiteForLead(leadsFile, index, templateStyle = 'neo-glass', forceRegenerate = true) {
   const leads = loadJson(leadsFile, []);
@@ -28,6 +29,8 @@ export async function generateWebsiteForLead(leadsFile, index, templateStyle = '
   }
 
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const imageOverrides = await resolveImageSet(lead);
+  lead.imageOverrides = imageOverrides;
   const prompt = `Generate a stunning, production-ready website for this local business:\nBusiness: ${lead.name}\nIndustry: ${lead.industry}\nCity: ${lead.city}\nAddress: ${lead.address || 'local area'}\nPhone: ${lead.phone || 'contact us'}\nRating: ${lead.rating || '5.0'} (${lead.reviews || 50} reviews)`;
 
   let html = '';
@@ -52,14 +55,14 @@ export async function generateWebsiteForLead(leadsFile, index, templateStyle = '
   }
   const images = loadJson(path.join(IMAGES_DIR, `${lead.slug}.json`), {});
   const imageMap = {
-    '{{HERO_IMAGE}}': images.heroImage || 'https://picsum.photos/seed/hero/1920/1080',
-    '{{SERVICE_IMAGE_1}}': images.serviceImage1 || 'https://picsum.photos/seed/s1/800/600',
-    '{{SERVICE_IMAGE_2}}': images.serviceImage2 || 'https://picsum.photos/seed/s2/800/600',
-    '{{SERVICE_IMAGE_3}}': images.serviceImage3 || 'https://picsum.photos/seed/s3/800/600',
-    '{{GALLERY_IMAGE_1}}': images.galleryImage1 || 'https://picsum.photos/seed/g1/800/800',
-    '{{GALLERY_IMAGE_2}}': images.galleryImage2 || 'https://picsum.photos/seed/g2/800/800',
-    '{{ABOUT_IMAGE}}': images.aboutImage || 'https://picsum.photos/seed/about/1200/800',
-    '{{TESTIMONIAL_BG}}': images.testimonialBg || 'https://picsum.photos/seed/tbg/1920/1080'
+    '{{HERO_IMAGE}}': images.heroImage || imageOverrides.heroImage,
+    '{{SERVICE_IMAGE_1}}': images.serviceImage1 || imageOverrides.supportImage,
+    '{{SERVICE_IMAGE_2}}': images.serviceImage2 || imageOverrides.gallery1,
+    '{{SERVICE_IMAGE_3}}': images.serviceImage3 || imageOverrides.gallery2,
+    '{{GALLERY_IMAGE_1}}': images.galleryImage1 || imageOverrides.gallery1,
+    '{{GALLERY_IMAGE_2}}': images.galleryImage2 || imageOverrides.gallery2,
+    '{{ABOUT_IMAGE}}': images.aboutImage || imageOverrides.supportImage,
+    '{{TESTIMONIAL_BG}}': images.testimonialBg || imageOverrides.heroImage
   };
   for (const [k, v] of Object.entries(imageMap)) html = html.replaceAll(k, v);
 
@@ -72,7 +75,7 @@ export async function generateWebsiteForLead(leadsFile, index, templateStyle = '
   fs.writeFileSync(outFile, html);
   const idxFile = path.join(SITES_DIR, 'index.json');
   const idxRows = loadJson(idxFile, []);
-  const siteRow = { slug: lead.slug, business_name: lead.name, city: lead.city, industry: lead.industry, template_style: templateStyle, file_path: outFile, created_at: new Date().toISOString(), source_file: path.basename(leadsFile), html };
+  const siteRow = { slug: lead.slug, business_name: lead.name, city: lead.city, industry: lead.industry, template_style: templateStyle, file_path: outFile, created_at: new Date().toISOString(), source_file: path.basename(leadsFile), image_overrides: imageOverrides, html };
   idxRows.push(siteRow);
   saveJson(idxFile, idxRows);
 

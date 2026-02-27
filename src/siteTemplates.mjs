@@ -9,6 +9,7 @@ function esc(v = '') {
 
 function leadVars(lead) {
   const industry = lead.industry || 'local services';
+  const o = lead.imageOverrides || {};
   return {
     name: esc(lead.name || 'Local Business'),
     city: esc(lead.city || 'Your City'),
@@ -21,10 +22,10 @@ function leadVars(lead) {
     service1: esc(`Consultation & strategy`),
     service2: esc(`${industry} execution`),
     service3: esc(`Priority support`),
-    heroImage: `https://source.unsplash.com/1600x1100/?${encodeURIComponent(industry)},office,professional`,
-    supportImage: `https://source.unsplash.com/1200x900/?${encodeURIComponent(industry)},team,workspace`,
-    gallery1: `https://source.unsplash.com/900x700/?${encodeURIComponent(industry)},modern,interior`,
-    gallery2: `https://source.unsplash.com/900x700/?${encodeURIComponent(industry)},design,brand`,
+    heroImage: o.heroImage || `https://source.unsplash.com/1600x1100/?${encodeURIComponent(industry)},office,professional`,
+    supportImage: o.supportImage || `https://source.unsplash.com/1200x900/?${encodeURIComponent(industry)},team,workspace`,
+    gallery1: o.gallery1 || `https://source.unsplash.com/900x700/?${encodeURIComponent(industry)},modern,interior`,
+    gallery2: o.gallery2 || `https://source.unsplash.com/900x700/?${encodeURIComponent(industry)},design,brand`,
   };
 }
 
