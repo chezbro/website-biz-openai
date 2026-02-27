@@ -61,11 +61,36 @@ h1{font-size:clamp(2.1rem,5vw,4rem);margin:8px 0}.sub{color:#b1bfdc}.cta{display
 </style></head><body><div class="wrap"><section class="hero"><img src="${v.heroImage}" alt="${v.name}"/><div class="in"><div class="sub">${v.city} · ${v.industry}</div><h1>${v.name}</h1><p class="sub">High-impact service experience built for speed, trust, and conversion.</p><a class="cta" href="mailto:${v.email}">Get Proposal</a></div></section><section class="cards"><article class="card"><h3>Premium Outcomes</h3><p class="sub">Designed to impress clients on desktop and mobile.</p></article><article class="card"><h3>${v.rating} ★ Trust Score</h3><p class="sub">Based on ${v.reviews} public reviews.</p></article><article class="card"><h3>Direct Contact</h3><p class="sub">${v.phone}<br/>${v.address}</p></article></section></div></body></html>`;
 }
 
-export const TEMPLATE_STYLES = ['neo-glass', 'minimal-luxe', 'bold-editorial', 'ai-premium'];
+function injuryAuthority(v) {
+  return `<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>${v.name} | ${v.city} Personal Injury Lawyers</title><style>
+:root{--nav:#0a1428;--bg:#f4f7fc;--ink:#091226;--muted:#5a6b89;--accent:#ce1f27;--gold:#f3c76b;--line:#d9e1ef}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui;background:var(--bg);color:var(--ink)}
+.top{background:var(--nav);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.top .cta{background:var(--accent);color:#fff;text-decoration:none;padding:10px 14px;border-radius:8px;font-weight:800}
+.hero{position:relative;min-height:540px;display:grid;place-items:center;background:#081327;overflow:hidden}.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:brightness(.45)}.overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,12,26,.1),rgba(6,12,26,.75))}
+.hero-inner{position:relative;max-width:1180px;width:100%;padding:28px;display:grid;grid-template-columns:1.1fr .9fr;gap:20px}.headline h1{font-size:clamp(2.1rem,4.8vw,4.2rem);line-height:1.02;margin:0 0 12px;color:#fff}.headline p{color:#d8e4ff;max-width:640px}
+.badges{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.badge{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;padding:6px 10px;border-radius:999px;font-size:12px}
+.form{background:#fff;border-radius:16px;padding:18px;border:1px solid var(--line);box-shadow:0 20px 50px rgba(3,9,24,.25)}.form h3{margin:0 0 10px}.form input,.form textarea{width:100%;padding:10px;border:1px solid #cfd8ea;border-radius:8px;margin-bottom:8px;font:inherit}.form button{width:100%;border:0;background:var(--accent);color:#fff;font-weight:800;padding:12px;border-radius:9px;cursor:pointer}
+.wrap{max-width:1180px;margin:0 auto;padding:22px}.trust{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.tile{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px}.tile strong{display:block;font-size:1.3rem}
+.section{margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.card{border:1px solid #dbe3f1;border-radius:12px;padding:14px;background:#fff}.result{background:#0d1d3a;color:#f3f7ff;border-color:#253f74}.result .amt{font-size:1.7rem;font-weight:900;color:var(--gold)}
+.media{display:grid;grid-template-columns:1fr 1fr;gap:12px}.media img{width:100%;height:260px;object-fit:cover;border-radius:12px;border:1px solid #d8e1ee}
+footer{margin-top:18px;background:#0b162d;color:#d5e0f8;padding:20px}
+@media(max-width:980px){.hero-inner{grid-template-columns:1fr}.trust{grid-template-columns:1fr 1fr}.grid3{grid-template-columns:1fr}.media{grid-template-columns:1fr}}
+</style></head><body>
+<div class="top"><div><strong>${v.name}</strong> · ${v.city}</div><a class="cta" href="tel:${v.phone}">Call ${v.phone}</a></div>
+<section class="hero"><img src="${v.heroImage}" alt="${v.name}"/><div class="overlay"></div><div class="hero-inner"><div class="headline"><h1>Injured? Get Maximum Compensation With ${v.name}</h1><p>Trial-ready representation with relentless negotiation. No fee unless we win your case.</p><div class="badges"><span class="badge">${v.rating}★ Rating</span><span class="badge">${v.reviews}+ Reviews</span><span class="badge">Free Consultation</span><span class="badge">No Win, No Fee</span></div></div><aside class="form"><h3>Free Case Review</h3><input placeholder="Full Name"/><input placeholder="Phone"/><input placeholder="Email"/><textarea rows="3" placeholder="Tell us about your accident"></textarea><button>Request Consultation</button><div style="margin-top:8px;color:#5a6b89;font-size:12px">By submitting, you agree to be contacted by ${v.name}.</div></aside></div></section>
+<div class="wrap"><section class="trust"><article class="tile"><strong>$2.4M+</strong>Recent Auto Settlement</article><article class="tile"><strong>$1.8M+</strong>Premises Liability Win</article><article class="tile"><strong>24/7</strong>Attorney Access</article><article class="tile"><strong>${v.rating}★</strong>Client Satisfaction</article></section>
+<section class="section"><h2>Practice Areas</h2><div class="grid3"><article class="card"><h3>Car & Truck Accidents</h3><p>Rapid evidence capture and insurer pressure from day one.</p></article><article class="card"><h3>Slip & Fall</h3><p>Property negligence claims backed by expert documentation.</p></article><article class="card"><h3>Wrongful Death</h3><p>Compassionate litigation for families facing devastating loss.</p></article></div></section>
+<section class="section"><h2>Case Results</h2><div class="grid3"><article class="card result"><div class="amt">$2,400,000</div><div>Highway collision settlement</div></article><article class="card result"><div class="amt">$1,125,000</div><div>Spinal injury verdict</div></article><article class="card result"><div class="amt">$860,000</div><div>Premises liability recovery</div></article></div></section>
+<section class="section"><h2>Client Experience</h2><div class="media"><img src="${v.gallery1}" alt="client success"/><img src="${v.gallery2}" alt="legal team"/></div></section>
+</div><footer><div class="wrap"><strong>${v.name}</strong><div>${v.address} · ${v.email}</div></div></footer></body></html>`;
+}
+
+export const TEMPLATE_STYLES = ['injury-authority','neo-glass', 'minimal-luxe', 'bold-editorial', 'ai-premium'];
 
 export function buildWebsiteTemplate(style, lead) {
   const v = leadVars(lead);
   switch (style) {
+    case 'injury-authority': return injuryAuthority(v);
     case 'minimal-luxe': return minimalLuxe(v);
     case 'bold-editorial': return boldEditorial(v);
     case 'neo-glass':
