@@ -81,4 +81,85 @@ export async function dbNextQueuedJob() {
   return mapRow(Array.isArray(rows) ? rows[0] : rows);
 }
 
+export async function dbUpsertLeads(sourceFile, leads = []) {
+  if (!hasSupabase() || !Array.isArray(leads) || !leads.length) return null;
+  const rows = leads.map((l) => ({
+    source_file: sourceFile,
+    lead_key: `${l.name || ''}|${l.address || ''}`,
+    name: l.name || '',
+    industry: l.industry || null,
+    city: l.city || null,
+    address: l.address || null,
+    phone: l.phone || null,
+    email: l.email || null,
+    email_status: l.email_status || null,
+    website: l.website || null,
+    website_url: l.website_url || null,
+    rating: l.rating ?? null,
+    reviews: Number(l.reviews || 0),
+    enriched: !!l.enriched,
+    socials: l.socials || {},
+    raw: l,
+    updated_at: new Date().toISOString(),
+  }));
+  return sfetch('/website_biz_leads?on_conflict=source_file,lead_key', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(rows),
+  });
+}
+
+export async function dbUpsertWebsite(row) {
+  if (!hasSupabase() || !row?.slug) return null;
+  return sfetch('/website_biz_websites?on_conflict=slug', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify([{
+      slug: row.slug,
+      source_file: row.source_file || null,
+      business_name: row.business_name || null,
+      city: row.city || null,
+      industry: row.industry || null,
+      file_path: row.file_path || null,
+      created_at: row.created_at || new Date().toISOString(),
+      raw: row.raw || row,
+    }]),
+  });
+}
+
+export async function dbListLeads(limit = 200) {
+  if (!hasSupabase()) return null;
+  return sfetch(`/website_biz_leads?select=*&order=updated_at.desc&limit=${Number(limit)}`);
+}
+
+export async function dbListWebsites(limit = 200) {
+  if (!hasSupabase()) return null;
+  return sfetch(`/website_biz_websites?select=*&order=created_at.desc&limit=${Number(limit)}`);
+}
+
+export async function dbListOutreach(limit = 200) {
+  if (!hasSupabase()) return null;
+  return sfetch(`/website_biz_outreach?select=*&order=created_at.desc&limit=${Number(limit)}`);
+}
+
+export async function dbUpsertOutreach(entries = [], sourceFile = null) {
+  if (!hasSupabase() || !Array.isArray(entries) || !entries.length) return null;
+  const rows = entries.map((e) => ({
+    id: e.id,
+    source_file: sourceFile,
+    email: e.email || null,
+    business_name: e.business_name || null,
+    template_id: e.template_id || null,
+    sent_at: e.sent_at || null,
+    status: e.status || null,
+    error: e.error || null,
+    raw: e,
+  }));
+  return sfetch('/website_biz_outreach?on_conflict=id', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(rows),
+  });
+}
+
 export { hasSupabase };

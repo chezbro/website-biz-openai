@@ -1,4 +1,6 @@
+import path from 'path';
 import { loadJson, saveJson } from './paths.mjs';
+import { dbUpsertLeads } from './db.mjs';
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function fetchText(url, timeout = 8000) {
@@ -40,5 +42,6 @@ export async function enrichLeads(leadsFile) {
     await delay(300);
   }
   saveJson(leadsFile, leads);
+  try { await dbUpsertLeads(path.basename(leadsFile), leads); } catch {}
   return { total: leads.length, processed: touched, withEmail: leads.filter((x) => x.email).length };
 }

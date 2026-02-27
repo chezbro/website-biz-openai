@@ -1,5 +1,6 @@
 import path from 'path';
 import { DATA_DIR, loadJson, saveJson } from './paths.mjs';
+import { dbUpsertLeads } from './db.mjs';
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -208,6 +209,7 @@ export async function scrapeLeads({ query, location, maxResults = 60 }) {
   }
 
   saveJson(outFile, merged);
+  try { await dbUpsertLeads(path.basename(outFile), merged); } catch {}
   return {
     outFile,
     count: merged.length,

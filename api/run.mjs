@@ -44,7 +44,7 @@ export default async function handler(req, res) {
     switch (action) {
       case 'check': result = checkEnv(); break;
       case 'status': result = getStatus(); break;
-      case 'history': result = getHistory(Number(params.limitPerFile || 20)); break;
+      case 'history': result = await getHistory(Number(params.limitPerFile || 20)); break;
       case 'scrape': result = await scrapeLeads({ query: params.query, location: params.location, maxResults: Number(params.maxResults || 60) }); break;
       case 'enrich': result = await enrichLeads(params.leadsFile); break;
       case 'generate-site': result = await generateWebsiteForLead(params.leadsFile, Number(params.index)); break;
