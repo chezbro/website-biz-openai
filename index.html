@@ -29,7 +29,9 @@
       <label>Industry<input id="q" value="plumbers"></label>
       <label>City<input id="loc" value="Austin TX"></label>
       <label>Max results<input id="max" value="60"></label>
-      <button onclick="run('scrape',{query:v('q'),location:v('loc'),maxResults:Number(v('max'))},true)">Scrape</button>
+      <button onclick="run('scrape',{query:v('q'),location:v('loc'),maxResults:Number(v('max'))},true)">Scrape (Queue)</button>
+      <button onclick="runLocalScrape()">Run Scrape Locally</button>
+      <p class="muted">Local button opens your local runner at http://localhost:8787 and runs scrape there.</p>
     </div>
 
     <div class="card"><h3>Enrich Leads</h3>
@@ -92,6 +94,26 @@ async function run(action, params={}, isAsync=false){
     out.textContent=JSON.stringify(j,null,2);
   }catch(e){out.textContent='ERROR: '+e.message}
 }
+
+function runLocalScrape(){
+  const query = encodeURIComponent(v('q'));
+  const location = encodeURIComponent(v('loc'));
+  const max = encodeURIComponent(String(Number(v('max') || 60)));
+  const url = `http://localhost:8787/?autoLocalScrape=1&q=${query}&loc=${location}&max=${max}`;
+  window.open(url, '_blank', 'noopener');
+}
+
+(async function autoRunLocalFromQuery(){
+  const sp = new URLSearchParams(window.location.search);
+  if (sp.get('autoLocalScrape') !== '1') return;
+  const q = sp.get('q') || v('q');
+  const loc = sp.get('loc') || v('loc');
+  const max = Number(sp.get('max') || v('max') || 60);
+  document.getElementById('q').value = q;
+  document.getElementById('loc').value = loc;
+  document.getElementById('max').value = String(max);
+  await run('scrape', { query: q, location: loc, maxResults: max }, false);
+})();
 </script>
 </body>
 </html>
