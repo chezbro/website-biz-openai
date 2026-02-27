@@ -66,6 +66,20 @@ Queue jobs from web UI using async actions, then process them with a worker.
 npm run worker
 ```
 
+### Auto-start worker on macOS (LaunchAgent)
+```bash
+chmod +x scripts/*.sh
+./scripts/install-worker-launchagent.sh
+```
+
+Useful commands:
+```bash
+launchctl print gui/$(id -u)/com.chezbro.website-biz-worker | head -40
+ tail -f logs/worker.out.log
+ tail -f logs/worker.err.log
+./scripts/uninstall-worker-launchagent.sh
+```
+
 ### Remote worker trigger
 ```bash
 curl -X POST "https://website-biz-openai.vercel.app/api/worker" -H "x-worker-token: YOUR_WORKER_TOKEN"
