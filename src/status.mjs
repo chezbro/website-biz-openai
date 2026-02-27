@@ -20,9 +20,9 @@ export function getStatus() {
 export async function getHistory(limitPerFile = 20) {
   if (hasSupabase()) {
     try {
-      const [leadsRows, websites, outreach] = await Promise.all([
+      const [leadsRows, websitesRaw, outreach] = await Promise.all([
         dbListLeads(300),
-        dbListWebsites(300),
+        dbListWebsites(1000),
         dbListOutreach(300),
       ]);
 
@@ -47,7 +47,15 @@ export async function getHistory(limitPerFile = 20) {
         })),
       }));
 
-      return { leads, websites: websites || [], outreach: outreach || [], source: 'supabase' };
+      const websitesMap = new Map();
+      for (const w of (websitesRaw || [])) {
+        const key = w.slug || w.business_name || w.file_path;
+        if (!key || websitesMap.has(key)) continue;
+        websitesMap.set(key, w);
+      }
+      const websites = Array.from(websitesMap.values());
+
+      return { leads, websites, outreach: outreach || [], source: 'supabase' };
     } catch {}
 
     // Fallback: persist/read artifacts from website_biz_jobs when dedicated tables are unavailable.
@@ -56,7 +64,7 @@ export async function getHistory(limitPerFile = 20) {
       const artifactJobs = (jobs || []).filter((j) => String(j.type || '').startsWith('artifact:'));
 
       const latestLeadsByFile = new Map();
-      const websites = [];
+      const websitesMap = new Map();
       const outreach = [];
 
       for (const j of artifactJobs) {
@@ -65,7 +73,9 @@ export async function getHistory(limitPerFile = 20) {
         if (kind === 'leads' && p.key) {
           latestLeadsByFile.set(p.key, p.data || {});
         } else if (kind === 'website' && p.data) {
-          websites.push(p.data);
+          const w = p.data;
+          const key = w.slug || w.business_name || w.file_path || p.key;
+          if (key && !websitesMap.has(key)) websitesMap.set(key, w);
         } else if (kind === 'outreach' && p.data?.sample) {
           outreach.push(...p.data.sample);
         }
@@ -85,6 +95,7 @@ export async function getHistory(limitPerFile = 20) {
         })) : [],
       }));
 
+      const websites = Array.from(websitesMap.values());
       return { leads, websites, outreach, source: 'supabase_jobs_artifacts' };
     } catch {}
   }
