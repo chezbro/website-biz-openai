@@ -100,6 +100,20 @@ function runLocalScrape(){
   const location = encodeURIComponent(v('loc'));
   const max = encodeURIComponent(String(Number(v('max') || 60)));
   const url = `http://localhost:8787/?autoLocalScrape=1&q=${query}&loc=${location}&max=${max}`;
+
+  const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  if (!isLocalHost) {
+    out.textContent = [
+      'Local scrape can only run on your Mac browser (localhost).',
+      '',
+      'From phone/prod, use "Scrape (Queue)" instead.',
+      'Then keep your Mac worker running to process queued jobs.',
+      '',
+      `Local runner link (open on Mac): ${url}`
+    ].join('\n');
+    return;
+  }
+
   window.open(url, '_blank', 'noopener');
 }
 
