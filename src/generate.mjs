@@ -10,6 +10,7 @@ export async function generateWebsiteForLead(leadsFile, index) {
   if (!lead) throw new Error('lead_not_found');
   if (lead.website_url) {
     try {
+      const existingHtml = fs.existsSync(lead.website_url) ? fs.readFileSync(lead.website_url, 'utf8') : null;
       await dbWriteArtifact('website', lead.slug, {
         slug: lead.slug,
         business_name: lead.name,
@@ -18,6 +19,7 @@ export async function generateWebsiteForLead(leadsFile, index) {
         file_path: lead.website_url,
         source_file: path.basename(leadsFile),
         created_at: new Date().toISOString(),
+        html: existingHtml,
       });
     } catch {}
     return { skipped: true, reason: 'already_generated', website: lead.website_url };
@@ -66,7 +68,7 @@ export async function generateWebsiteForLead(leadsFile, index) {
   fs.writeFileSync(outFile, html);
   const idxFile = path.join(SITES_DIR, 'index.json');
   const idxRows = loadJson(idxFile, []);
-  const siteRow = { slug: lead.slug, business_name: lead.name, city: lead.city, industry: lead.industry, file_path: outFile, created_at: new Date().toISOString(), source_file: path.basename(leadsFile) };
+  const siteRow = { slug: lead.slug, business_name: lead.name, city: lead.city, industry: lead.industry, file_path: outFile, created_at: new Date().toISOString(), source_file: path.basename(leadsFile), html };
   idxRows.push(siteRow);
   saveJson(idxFile, idxRows);
 

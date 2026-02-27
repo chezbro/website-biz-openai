@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Website Biz — History</title>
+  <style>
+    body{font-family:Inter,system-ui;background:linear-gradient(180deg,#0a0f1d,#101a31);color:#eef4ff;margin:0}
+    .wrap{max-width:1100px;margin:0 auto;padding:24px}
+    h1{margin:4px 0 12px}
+    .muted{color:#9fb0d3}
+    .top{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .btn{background:#5eead4;color:#03201d;border:0;padding:9px 12px;border-radius:10px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-top:16px}
+    .card{background:#131b2f;border:1px solid #2b3c61;border-radius:14px;padding:14px}
+    .pill{display:inline-block;background:#1c2a46;border:1px solid #34518a;color:#b7ccf4;padding:2px 8px;border-radius:999px;font-size:12px}
+    .item{padding:10px;border:1px solid #2a3a60;border-radius:10px;background:#0e1629;margin-top:8px}
+    .title{font-weight:700}
+    .sub{font-size:13px;color:#9fb0d3}
+    .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .ghost{background:#22355a;color:#d8e7ff}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>History Dashboard</h1>
+      <div class="muted">Scrapes, generated websites, and outreach timeline.</div>
+    </div>
+    <div class="row">
+      <a class="btn ghost" href="/">Back</a>
+      <button class="btn" onclick="loadHistory()">Refresh</button>
+    </div>
+  </div>
+
+  <div id="meta" class="muted" style="margin-top:10px"></div>
+
+  <div class="grid">
+    <section class="card">
+      <h3>Lead Batches</h3>
+      <div id="leads"></div>
+    </section>
+    <section class="card">
+      <h3>Generated Websites</h3>
+      <div id="sites"></div>
+    </section>
+    <section class="card">
+      <h3>Outreach</h3>
+      <div id="outreach"></div>
+    </section>
+  </div>
+</div>
+<script>
+const $ = (id) => document.getElementById(id);
+
+async function api(action, params={}){
+  const r = await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,params})});
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error||'request_failed');
+  return j.result;
+}
+
+function renderLeads(rows=[]){
+  const box = $('leads');
+  if(!rows.length){ box.innerHTML = '<div class="muted">No lead history yet.</div>'; return; }
+  box.innerHTML = rows.map(b => `
+    <div class="item">
+      <div class="title">${b.file}</div>
+      <div class="sub">${b.total} leads</div>
+      ${(b.sample||[]).slice(0,5).map(r=>`<div class="sub">• ${r.name} — ${r.city || ''}</div>`).join('')}
+    </div>
+  `).join('');
+}
+
+function renderSites(rows=[]){
+  const box = $('sites');
+  if(!rows.length){ box.innerHTML = '<div class="muted">No generated websites yet.</div>'; return; }
+  box.innerHTML = rows.map(s => `
+    <div class="item">
+      <div class="title">${s.business_name || s.slug}</div>
+      <div class="sub">${s.city || ''} · ${s.industry || ''}</div>
+      <div class="row">
+        <button class="btn" onclick='openSite(${JSON.stringify(JSON.stringify({slug:s.slug,filePath:s.file_path}))})'>Open Website</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderOutreach(rows=[]){
+  const box = $('outreach');
+  if(!rows.length){ box.innerHTML = '<div class="muted">No outreach records yet.</div>'; return; }
+  box.innerHTML = rows.slice(0,50).map(o => `
+    <div class="item">
+      <div class="title">${o.business_name || o.email || 'Unknown'}</div>
+      <div class="sub">${o.email || ''}</div>
+      <div class="sub"><span class="pill">${o.status || 'unknown'}</span>${o.error ? ` · ${o.error}` : ''}</div>
+    </div>
+  `).join('');
+}
+
+async function openSite(payloadJson){
+  const payload = JSON.parse(payloadJson);
+  const result = await api('website-html', payload);
+  const w = window.open('', '_blank');
+  if(!w){ alert('Please allow popups for preview.'); return; }
+  w.document.open();
+  w.document.write(result.html || '<h1>No HTML found</h1>');
+  w.document.close();
+}
+
+async function loadHistory(){
+  try{
+    $('meta').textContent = 'Loading…';
+    const h = await api('history',{limitPerFile:20});
+    $('meta').textContent = `Source: ${h.source || 'unknown'} · Leads batches: ${(h.leads||[]).length} · Websites: ${(h.websites||[]).length} · Outreach: ${(h.outreach||[]).length}`;
+    renderLeads(h.leads || []);
+    renderSites(h.websites || []);
+    renderOutreach(h.outreach || []);
+  }catch(e){
+    $('meta').textContent = 'Failed to load history: ' + e.message;
+  }
+}
+
+loadHistory();
+</script>
+</body>
+</html>

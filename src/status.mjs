@@ -115,3 +115,20 @@ export async function getHistory(limitPerFile = 20) {
 
   return { leads, websites, outreach, source: 'local' };
 }
+
+export async function getWebsiteHtml({ slug, filePath } = {}) {
+  if (hasSupabase() && slug) {
+    try {
+      const jobs = await dbListJobs(1000);
+      const hit = (jobs || []).find((j) => j.type === 'artifact:website' && j.payload?.key === slug && j.payload?.data?.html);
+      if (hit?.payload?.data?.html) return { html: hit.payload.data.html, source: 'supabase_jobs_artifacts' };
+    } catch {}
+  }
+
+  const fp = filePath || (slug ? path.join(SITES_DIR, `${slug}.html`) : null);
+  if (fp && fs.existsSync(fp)) {
+    return { html: fs.readFileSync(fp, 'utf8'), source: 'local_file' };
+  }
+
+  throw new Error('website_html_not_found');
+}
