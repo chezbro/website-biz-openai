@@ -5,7 +5,7 @@ import { scrapeLeads } from '../src/scrape.mjs';
 import { enrichLeads } from '../src/enrich.mjs';
 import { generateWebsiteForLead } from '../src/generate.mjs';
 import { sendOutreach } from '../src/outreach.mjs';
-import { getStatus } from '../src/status.mjs';
+import { getStatus, getHistory } from '../src/status.mjs';
 import { setDailyTarget, runDaily } from '../src/daily.mjs';
 import { createJob, getJob, listJobs } from '../src/jobs.mjs';
 
@@ -44,6 +44,7 @@ export default async function handler(req, res) {
     switch (action) {
       case 'check': result = checkEnv(); break;
       case 'status': result = getStatus(); break;
+      case 'history': result = getHistory(Number(params.limitPerFile || 20)); break;
       case 'scrape': result = await scrapeLeads({ query: params.query, location: params.location, maxResults: Number(params.maxResults || 60) }); break;
       case 'enrich': result = await enrichLeads(params.leadsFile); break;
       case 'generate-site': result = await generateWebsiteForLead(params.leadsFile, Number(params.index)); break;
