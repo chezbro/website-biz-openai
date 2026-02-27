@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       case 'website-html': result = await getWebsiteHtml({ slug: params.slug, filePath: params.filePath }); break;
       case 'scrape': result = await scrapeLeads({ query: params.query, location: params.location, maxResults: Number(params.maxResults || 60) }); break;
       case 'enrich': result = await enrichLeads(params.leadsFile); break;
-      case 'generate-site': result = await generateWebsiteForLead(params.leadsFile, Number(params.index)); break;
+      case 'generate-site': result = await generateWebsiteForLead(params.leadsFile, Number(params.index), params.templateStyle || 'neo-glass', params.forceRegenerate !== false); break;
       case 'send': result = await sendOutreach(params.leadsFile); break;
       case 'template-list': result = listTemplates(); break;
       case 'template-add': addTemplate(params.name, params.subject, params.body); result = { ok: true }; break;

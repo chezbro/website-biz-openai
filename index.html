@@ -43,7 +43,16 @@
     <div class="card"><h3>Generate Website</h3>
       <label>Leads file<input id="glf" value="/tmp/website-biz/leads-plumbers-austin-tx.json"></label>
       <label>Lead index<input id="idx" value="0"></label>
-      <button onclick="run('generate-site',{leadsFile:v('glf'),index:Number(v('idx'))})">Generate</button>
+      <label>Template style
+        <select id="tmpl" style="width:100%;margin-top:6px;background:#0d1426;color:#eef4ff;border:1px solid #33456c;border-radius:8px;padding:8px">
+          <option value="neo-glass">Neo Glass (2026 premium)</option>
+          <option value="minimal-luxe">Minimal Luxe</option>
+          <option value="bold-editorial">Bold Editorial</option>
+          <option value="ai-premium">AI Premium (uses OpenAI quota)</option>
+        </select>
+      </label>
+      <button onclick="run('generate-site',{leadsFile:v('glf'),index:Number(v('idx')),templateStyle:v('tmpl')})">Generate</button>
+      <button onclick="window.location.href='/history.html'">View Generated Sites</button>
     </div>
 
     <div class="card"><h3>Send Outreach</h3>

@@ -26,8 +26,8 @@ try {
     const [leadsFile] = args;
     console.log(JSON.stringify(await enrichLeads(leadsFile), null, 2));
   } else if (cmd === 'generate-site') {
-    const [leadsFile, index] = args;
-    console.log(JSON.stringify(await generateWebsiteForLead(leadsFile, Number(index)), null, 2));
+    const [leadsFile, index, templateStyle] = args;
+    console.log(JSON.stringify(await generateWebsiteForLead(leadsFile, Number(index), templateStyle || 'neo-glass', true), null, 2));
   } else if (cmd === 'send') {
     const [leadsFile] = args;
     console.log(JSON.stringify(await sendOutreach(leadsFile), null, 2));

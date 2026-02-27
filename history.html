@@ -79,7 +79,7 @@ function renderSites(rows=[]){
   box.innerHTML = rows.map(s => `
     <div class="item">
       <div class="title">${s.business_name || s.slug}</div>
-      <div class="sub">${s.city || ''} · ${s.industry || ''}</div>
+      <div class="sub">${s.city || ''} · ${s.industry || ''}${s.template_style ? ` · ${s.template_style}` : ''}</div>
       <div class="row">
         <button class="btn" onclick='openSite(${JSON.stringify(JSON.stringify({slug:s.slug,filePath:s.file_path}))})'>Open Website</button>
       </div>

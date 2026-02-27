@@ -101,7 +101,7 @@ export async function processNextJob() {
         result = await enrichLeads(next.payload.leadsFile);
         break;
       case 'generate-site':
-        result = await generateWebsiteForLead(next.payload.leadsFile, Number(next.payload.index));
+        result = await generateWebsiteForLead(next.payload.leadsFile, Number(next.payload.index), next.payload.templateStyle || 'neo-glass', next.payload.forceRegenerate !== false);
         break;
       case 'send':
         result = await sendOutreach(next.payload.leadsFile);
