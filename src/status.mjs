@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { DATA_DIR, SITES_DIR, OUTREACH_LOG_FILE, TEMPLATES_FILE, DAILY_STATE_FILE, loadJson } from './paths.mjs';
 import { ensureTemplates } from './templates.mjs';
-import { hasSupabase, dbListLeads, dbListWebsites, dbListOutreach } from './db.mjs';
+import { hasSupabase, dbListLeads, dbListWebsites, dbListOutreach, dbListJobs } from './db.mjs';
 
 export function getStatus() {
   const leadsFiles = fs.existsSync(DATA_DIR) ? fs.readdirSync(DATA_DIR).filter((f) => f.startsWith('leads-') && f.endsWith('.json')) : [];
@@ -48,6 +48,44 @@ export async function getHistory(limitPerFile = 20) {
       }));
 
       return { leads, websites: websites || [], outreach: outreach || [], source: 'supabase' };
+    } catch {}
+
+    // Fallback: persist/read artifacts from website_biz_jobs when dedicated tables are unavailable.
+    try {
+      const jobs = await dbListJobs(500);
+      const artifactJobs = (jobs || []).filter((j) => String(j.type || '').startsWith('artifact:'));
+
+      const latestLeadsByFile = new Map();
+      const websites = [];
+      const outreach = [];
+
+      for (const j of artifactJobs) {
+        const kind = String(j.type).split(':')[1] || '';
+        const p = j.payload || {};
+        if (kind === 'leads' && p.key) {
+          latestLeadsByFile.set(p.key, p.data || {});
+        } else if (kind === 'website' && p.data) {
+          websites.push(p.data);
+        } else if (kind === 'outreach' && p.data?.sample) {
+          outreach.push(...p.data.sample);
+        }
+      }
+
+      const leads = Array.from(latestLeadsByFile.entries()).map(([file, data]) => ({
+        file,
+        total: Number(data.total || 0),
+        sample: Array.isArray(data.sample) ? data.sample.slice(0, limitPerFile).map((r) => ({
+          name: r.name,
+          industry: r.industry,
+          city: r.city,
+          email: r.email || null,
+          phone: r.phone || null,
+          website_url: r.website_url || null,
+          enriched: !!r.enriched,
+        })) : [],
+      }));
+
+      return { leads, websites, outreach, source: 'supabase_jobs_artifacts' };
     } catch {}
   }
 

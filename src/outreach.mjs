@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import path from 'path';
 import { loadJson, saveJson, OUTREACH_LOG_FILE } from './paths.mjs';
-import { dbUpsertOutreach } from './db.mjs';
+import { dbUpsertOutreach, dbWriteArtifact } from './db.mjs';
 import { ensureTemplates } from './templates.mjs';
 
 const sub = (txt, vars) => Object.entries(vars).reduce((s,[k,v]) => s.replaceAll(`{{${k}}}`, v || ''), txt);
@@ -38,5 +38,6 @@ export async function sendOutreach(leadsFile) {
   }
   saveJson(OUTREACH_LOG_FILE, log);
   try { await dbUpsertOutreach(log, path.basename(leadsFile)); } catch {}
+  try { await dbWriteArtifact('outreach', path.basename(leadsFile), { total: log.length, sample: log.slice(-100) }); } catch {}
   return { sent, attempted: eligible.length, remaining: Math.max(0, remaining - sent) };
 }

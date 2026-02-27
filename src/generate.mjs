@@ -2,13 +2,26 @@ import fs from 'fs';
 import path from 'path';
 import OpenAI from 'openai';
 import { IMAGES_DIR, SITES_DIR, loadJson, saveJson } from './paths.mjs';
-import { dbUpsertLeads, dbUpsertWebsite } from './db.mjs';
+import { dbUpsertLeads, dbUpsertWebsite, dbWriteArtifact } from './db.mjs';
 
 export async function generateWebsiteForLead(leadsFile, index) {
   const leads = loadJson(leadsFile, []);
   const lead = leads[index];
   if (!lead) throw new Error('lead_not_found');
-  if (lead.website_url) return { skipped: true, reason: 'already_generated', website: lead.website_url };
+  if (lead.website_url) {
+    try {
+      await dbWriteArtifact('website', lead.slug, {
+        slug: lead.slug,
+        business_name: lead.name,
+        city: lead.city,
+        industry: lead.industry,
+        file_path: lead.website_url,
+        source_file: path.basename(leadsFile),
+        created_at: new Date().toISOString(),
+      });
+    } catch {}
+    return { skipped: true, reason: 'already_generated', website: lead.website_url };
+  }
 
   const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const prompt = `Generate a stunning, production-ready website for this local business:\nBusiness: ${lead.name}\nIndustry: ${lead.industry}\nCity: ${lead.city}\nAddress: ${lead.address || 'local area'}\nPhone: ${lead.phone || 'contact us'}\nRating: ${lead.rating || '5.0'} (${lead.reviews || 50} reviews)`;
@@ -61,10 +74,10 @@ export async function generateWebsiteForLead(leadsFile, index) {
   leads[index] = lead;
   saveJson(leadsFile, leads);
 
-  try {
-    await dbUpsertWebsite(siteRow);
-    await dbUpsertLeads(path.basename(leadsFile), leads);
-  } catch {}
+  try { await dbUpsertWebsite(siteRow); } catch {}
+  try { await dbUpsertLeads(path.basename(leadsFile), leads); } catch {}
+  try { await dbWriteArtifact('website', lead.slug, siteRow); } catch {}
+  try { await dbWriteArtifact('leads', path.basename(leadsFile), { total: leads.length, sample: leads.slice(0, 50) }); } catch {}
 
   return { skipped: false, website: outFile };
 }

@@ -1,6 +1,6 @@
 import path from 'path';
 import { loadJson, saveJson } from './paths.mjs';
-import { dbUpsertLeads } from './db.mjs';
+import { dbUpsertLeads, dbWriteArtifact } from './db.mjs';
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function fetchText(url, timeout = 8000) {
@@ -43,5 +43,6 @@ export async function enrichLeads(leadsFile) {
   }
   saveJson(leadsFile, leads);
   try { await dbUpsertLeads(path.basename(leadsFile), leads); } catch {}
+  try { await dbWriteArtifact('leads', path.basename(leadsFile), { total: leads.length, sample: leads.slice(0, 50) }); } catch {}
   return { total: leads.length, processed: touched, withEmail: leads.filter((x) => x.email).length };
 }

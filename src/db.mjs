@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 const hasSupabase = () => Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 function headers() {
@@ -140,6 +142,23 @@ export async function dbListWebsites(limit = 200) {
 export async function dbListOutreach(limit = 200) {
   if (!hasSupabase()) return null;
   return sfetch(`/website_biz_outreach?select=*&order=created_at.desc&limit=${Number(limit)}`);
+}
+
+export async function dbWriteArtifact(kind, key, data) {
+  if (!hasSupabase()) return null;
+  const now = new Date().toISOString();
+  const id = crypto.randomUUID();
+  return dbInsertJob({
+    id,
+    type: `artifact:${kind}`,
+    payload: { key, data },
+    status: 'done',
+    createdAt: now,
+    startedAt: now,
+    finishedAt: now,
+    error: null,
+    result: { ok: true },
+  });
 }
 
 export async function dbUpsertOutreach(entries = [], sourceFile = null) {
