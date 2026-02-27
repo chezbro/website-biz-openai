@@ -30,14 +30,13 @@ export default async function handler(req, res) {
 
     // In Vercel serverless, free browser scraping is unreliable due missing system libs.
     // Auto-queue scrape jobs so they can be processed by a local/remote worker runtime.
-    const freeMode = String(process.env.FREE_MAPS_SCRAPER || 'true').toLowerCase() === 'true';
-    if (action === 'scrape' && process.env.VERCEL && freeMode) {
+    if (action === 'scrape' && process.env.VERCEL) {
       const job = await createJob('scrape', params);
       return res.status(200).json({
         ok: true,
         queued: true,
         job,
-        note: 'Scrape job queued for worker runtime. Start local worker with `npm run worker` to process free Playwright jobs.'
+        note: 'Scrape is queued on hosted runtime. Process it with local worker (`npm run worker`) for Playwright compatibility.'
       });
     }
 
